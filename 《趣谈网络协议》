@@ -1,0 +1,93 @@
+第1讲 | 为什么要学习网络协议
+流程串讲
+应用层：URL，DNS，HTTP
+
+传输层：TCP（端口/进程）
+
+网络层：IP（由DNS得到），DHCP，网关（192.168.1.1，连接各个局域网，路由），OSPF 和 BGP路由协议
+
+数据链路层：MAC，ARP（获取网管的MAC），局域网（内部用MAC通信，外部根据IP段连接到网关）
+
+通过路由表得到下一个网关的 IP 地址，直接通过 IP 地址找就可以了，为什么还要通过本地的 MAC 地址呢？Mac是identify; IP是locate
+第2讲 | 网络分层的真实含义是什么
+ TCP 在进行三次握手的时候，IP 层和 MAC 层对应都有什么操作呢？
+路由中转的时候，下一跳网关的IP放在何处？
+通过 SSH 登录到公有云主机里面，都需要经历哪些过程？打开一个电商网站，都需要经历哪些过程
+网口对网络包处理的串讲
+二层设备：取MAC层的数据头，目标MAC是自己则交由上层处理，否则丢弃
+
+三层设备：取IP包的头，目标IP不是自己则转发（路由器），是自己则交由上层处理
+
+四层设备：TCP头，定位到端口/进程
+
+第3讲 | ifconfig
+ ifconfig 和 ip addr 的区别
+ipv4 五类
+CIDR。网络号+主机号。广播地址，子网掩码
+公有ip和私有ip192.168.0.x。私有ip专门为组织机构内部使用，它是局域网范畴内的，私有IP禁止出现在Internet中（私有IP和internet交互：NAT协议）
+IP定位，MAC唯一性（只在局域网内部可以用于定位）
+scope
+第4讲 | DHCP与PXE
+DHCP 的工作方式：Server，私有IP
+DHCP分配IP：Discover，Offer，Request，ACK
+DHCP回收IP
+DHCP和NAT区别：DHCP是用来分配IP地址的，NAT是用来转换IP地址的
+第5讲 | 从物理层到MAC层
+路由器（第三层）
+HUB（第一层设备）缺陷，无脑转发给其他所有端口
+MAC层（第二层；多路访问）
+交换机（第二层设备）广播；MAC指定端口（转发表）
+LAN和交换机
+ARP 协议（根据IP获取MAC）；局域网内广播（本机缓存），跨局域网找网关MAC
+一个局域网里面有多个交换机，ARP 广播的模式会出现什么问题？广播风暴
+子网？局域网？私有IP？动态IP？NAT，DHCP
+第6讲 | 交换机与VLAN
+回路问题
+STP
+VLAN（二层头，vlan id）同一个交换机下多个vlan互相隔离，Trunk
+如果两台机器不通，你知道应该用什么方式调试？ping+traceroute
+7讲 | ICMP与ping
+ping 是基于 ICMP 协议，ICMP 报文是封装在 IP 包里
+tcpdump -i eth0 icmp
+telnet
+traceroute
+第8讲 |网关
+MAC头
+IP头。source，target，ttl，下一层协议
+访问另一个 IP 地址的过程（先判断这个目标 IP 地址和当前机器的 IP 地址，是否在同一个网段；如果是同一个网段，通过APR获取目标机器的MAC，设置到MAC头；如果不是同一个网段，通过APR获取网关的MAC，设置到MAC头）目标ip不变，目标mac变
+转发网关；NAT网关（改变）
+NAT拓展（私有ip）napt协议维护一张映射表:内网ip:port->外网ip:空闲port;  icmp 使用 ip.id 填充端口
+第9讲 | 路由协议
+路由表:目的网络;出口设备;下一跳网关
+route 命令和 ip route 命令
+距离矢量路由算法，缺陷
+链路状态路由算法OSPF，BGP
+第10讲 | UDP协议
+TCP，UDP区别？1.连接；无差错、不丢失、不重复、并且按序到达 2.TCP 是面向字节流的，UPD面向IP包 3.TCP拥塞控制，有状态
+在计算机看来，怎么样才算一个连接呢
+UDP几乎完全继承了IP层的特性，优点：快、轻量，适用于直播等场景
+UDP头，端口
+应用：DHCP，QUIC，直播、游戏（RTC）、物联网
+第11讲 | TCP协议（上）
+TCP头：端口号，序列号，确认号，状态（SYN 是发起一个连接，ACK 是回复，RST 是重新连接，FIN 是结束连接），窗口大小
+TCP五个关键：顺序问题 ，稳重不乱；丢包问题，承诺靠谱；连接维护，有始有终；流量控制，把握分寸；拥塞控制，知进知退
+三次握手最主要的目的就是双方确认自己与对方的发送与接收是正常的，此外还为解决包序号问题
+第12讲 | TCP协议（下）
+累计应答，滑动窗口（AdvertisedWindow）；发送端四部分和接收端的三部分
+ACK含义：期望接收到的下一字节的序号n（假如接收端收到1-1024字节，它会发送一个确认号为1025的ACK,但是接下来收到的是2049-3072，它是不会发送确认号为3072的ACK,而依旧发送1025的ACK）；发送方根据收到ACK当中的期望收到的下一个字节的序号n以及窗口m，还有当前已经发送的字节序号x，算出还可以发送的字节数https://www.zhihu.com/question/32255109
+累计ACKhttps://blog.csdn.net/wdscq1234/article/details/52444277
+TCP五个关键：
+顺序问题、丢包问题、流量控制都是通过滑动窗口来解决的
+拥塞控制是通过拥塞窗口来解决的
+连接问题：三次握手，四次挥手
+滑动窗口 rwnd 是怕发送方把接收方缓存塞满，而拥塞窗口 cwnd，是怕把网络塞满。LastByteSent - LastByteAcked <= min {cwnd, rwnd}
+第13讲 | 套接字Socket
+监听 Socket，已连接 Socket
+系统调用：connect\accept
+socket文件数据结构
+C10K 问题。IO 多路复用，一个线程维护多个 Socket
+select，epoll（轮询与通知）
+第14讲 | HTTP协议
+HTTP 协议是基于 TCP 协议的
+HTTP 2.0 成功解决了 HTTP 1.1 的队首阻塞问题
+Google 的 QUIC 协议
